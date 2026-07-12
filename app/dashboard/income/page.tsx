@@ -188,28 +188,30 @@ export default function IncomePage() {
         </div>
       </Card>
 
-      {/* Team Income Overview */}
-      <Card>
-        <h3 className="font-medium text-white mb-3">Bảng lương team Cameraman (kỳ này)</h3>
-        <div className="space-y-2">
-          {allCameramenIncome.map(c => (
-            <div
-              key={c.name}
-              className={`flex items-center justify-between p-2 rounded ${
-                c.name === user.name ? 'bg-brand-pink/20 border border-brand-pink/30' : 'bg-brand-elevated'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-white font-medium">{c.name}</span>
-                <span className="text-xs text-brand-text-secondary">({c.count} buổi)</span>
+      {/* Team Income Overview - only for manager */}
+      {user?.role === 'manager' && (
+        <Card>
+          <h3 className="font-medium text-white mb-3">Bảng lương team Cameraman (kỳ này)</h3>
+          <div className="space-y-2">
+            {allCameramenIncome.map(c => (
+              <div
+                key={c.name}
+                className={`flex items-center justify-between p-2 rounded ${
+                  c.name === user.name ? 'bg-brand-pink/20 border border-brand-pink/30' : 'bg-brand-elevated'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-white font-medium">{c.name}</span>
+                  <span className="text-xs text-brand-text-secondary">({c.count} buổi)</span>
+                </div>
+                <span className={`text-sm font-bold ${c.name === user.name ? 'text-brand-pink' : 'text-white'}`}>
+                  {c.total.toLocaleString('vi-VN')}đ
+                </span>
               </div>
-              <span className={`text-sm font-bold ${c.name === user.name ? 'text-brand-pink' : 'text-white'}`}>
-                {c.total.toLocaleString('vi-VN')}đ
-              </span>
-            </div>
-          ))}
-        </div>
-      </Card>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* Sessions List */}
       {workSessions.length === 0 ? (

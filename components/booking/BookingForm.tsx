@@ -233,6 +233,16 @@ export default function BookingForm({ isOpen, onClose, editBooking }: BookingFor
             required
           />
 
+          {formData.mcName === 'Brand' && (
+            <Input
+              label="Tên Brand"
+              value={formData.brandName}
+              onChange={(e) => setFormData({ ...formData, brandName: e.target.value })}
+              placeholder="Nhập tên brand"
+              required
+            />
+          )}
+
           <Input
             label="Tên Content"
             value={formData.contentName}

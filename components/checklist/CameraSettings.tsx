@@ -35,13 +35,13 @@ export default function CameraSettingsForm({ settings, onChange }: CameraSetting
         />
 
         <Toggle
-          label="Resolution 4K"
+          label="Resolution"
           checked={settings.resolution === '4K'}
           onChange={(v) => onChange({ ...settings, resolution: v ? '4K' : 'FullHD' })}
         />
 
         <Toggle
-          label="FPS 60"
+          label="FPS"
           checked={settings.fps === 60}
           onChange={(v) => onChange({ ...settings, fps: v ? 60 : 30 })}
         />

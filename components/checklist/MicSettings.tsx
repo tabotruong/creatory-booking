@@ -22,7 +22,7 @@ export default function MicSettingsForm({ settings, onChange }: MicSettingsProps
         />
 
         <Toggle
-          label="Record Status"
+          label="Record"
           checked={settings.recordStatus}
           onChange={(v) => onChange({ ...settings, recordStatus: v })}
         />
