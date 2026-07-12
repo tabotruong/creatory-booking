@@ -20,6 +20,7 @@ import {
   Smartphone,
   Aperture,
   Building2,
+  UserPlus,
 } from 'lucide-react'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
@@ -27,6 +28,7 @@ import Badge from '../ui/Badge'
 import { useStore } from '@/lib/store'
 import { Booking } from '@/lib/types'
 import { formatDate, getStatusConfig, isRecording, cn } from '@/lib/utils'
+import { CAMERAMEN_LIST } from '@/lib/constants'
 
 interface BookingDetailProps {
   booking: Booking | null
@@ -72,6 +74,8 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
   const rejectBooking = useStore((state) => state.rejectBooking)
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [selectedCameramen, setSelectedCameramen] = useState<string[]>([])
+  const [showCameramanDropdown, setShowCameramanDropdown] = useState(false)
 
   if (!booking) return null
 
@@ -83,6 +87,7 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
   const canDelete = isManager || (isContentTeam && booking.status === 'pending')
   const canApprove = isManager && booking.status === 'pending'
   const canReject = isManager && booking.status === 'pending'
+  const canAssignCameraman = isManager && booking.status === 'approved'
 
   const handleApprove = () => {
     approveBooking(booking.id)
@@ -101,6 +106,19 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
   const handleEdit = () => {
     onEdit(booking)
     onClose()
+  }
+
+  const handleToggleCameraman = (name: string) => {
+    setSelectedCameramen(prev =>
+      prev.includes(name)
+        ? prev.filter(n => n !== name)
+        : [...prev, name]
+    )
+  }
+
+  const handleAssignCameraman = () => {
+    updateBooking(booking.id, { assignedCameramen: selectedCameramen })
+    setShowCameramanDropdown(false)
   }
 
   // Equipment list for display
@@ -280,18 +298,83 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
           </div>
 
           {/* SECTION 4: Cameraman */}
-          {booking.assignedCameramen.length > 0 && (
-            <div className="p-4 bg-brand-elevated rounded-lg">
-              <SectionTitle icon={<Users className="w-4 h-4" />} title="Cameraman được phân công" />
-              <div className="flex flex-wrap gap-2">
+          <div className="p-4 bg-brand-elevated rounded-lg">
+            <SectionTitle icon={<Users className="w-4 h-4" />} title="Cameraman được phân công" />
+
+            {/* Hiển thị cameraman đã assign */}
+            {booking.assignedCameramen.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
                 {booking.assignedCameramen.map((name, idx) => (
                   <Badge key={name} variant="approved">
                     {idx + 1}. {name}
                   </Badge>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+
+            {/* Dropdown phân công cameraman (chỉ khi manager && approved) */}
+            {canAssignCameraman && (
+              <div className="border-t border-brand-border pt-4">
+                {!showCameramanDropdown ? (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedCameramen(booking.assignedCameramen)
+                      setShowCameramanDropdown(true)
+                    }}
+                  >
+                    <UserPlus className="w-4 h-4 mr-1" />
+                    Phân công Cameraman
+                  </Button>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-brand-text-secondary">Chọn Cameraman:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {CAMERAMEN_LIST.map((name) => (
+                        <button
+                          key={name}
+                          onClick={() => handleToggleCameraman(name)}
+                          className={cn(
+                            'px-3 py-1.5 rounded-lg border text-sm font-medium transition-all',
+                            selectedCameramen.includes(name)
+                              ? 'bg-brand-pink/20 border-brand-pink text-white'
+                              : 'bg-brand-dark border-brand-border text-brand-text-secondary hover:border-brand-pink/50'
+                          )}
+                        >
+                          {name}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={handleAssignCameraman}
+                        disabled={selectedCameramen.length === 0}
+                      >
+                        Cập nhật
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowCameramanDropdown(false)}
+                      >
+                        Hủy
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Thông báo chưa có cameraman */}
+            {booking.assignedCameramen.length === 0 && !canAssignCameraman && (
+              <p className="text-sm text-brand-text-secondary italic">
+                Chưa có cameraman được phân công
+              </p>
+            )}
+          </div>
 
           {/* Meta */}
           <div className="text-xs text-brand-text-secondary border-t border-brand-border pt-4">
