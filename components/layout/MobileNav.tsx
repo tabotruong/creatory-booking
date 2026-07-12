@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { X, LayoutDashboard, Calendar, Video, ClipboardList, LogOut } from 'lucide-react'
+import { X, LayoutDashboard, Calendar, Video, ClipboardList, LogOut, Wallet } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
 
@@ -100,6 +100,21 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
               </Link>
             )
           })}
+          {user?.role === 'cameraman' && (
+            <Link
+              href="/dashboard/income"
+              onClick={onClose}
+              className={cn(
+                'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
+                pathname === '/dashboard/income'
+                  ? 'bg-brand-pink/20 text-brand-pink'
+                  : 'text-brand-text-secondary hover:bg-brand-elevated hover:text-white'
+              )}
+            >
+              <Wallet className="w-5 h-5" />
+              <span className="font-medium">Thu nhập</span>
+            </Link>
+          )}
         </nav>
 
         {/* Logout */}

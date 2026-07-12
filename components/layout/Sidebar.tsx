@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Calendar, Video, ClipboardList, LogOut } from 'lucide-react'
+import { LayoutDashboard, Calendar, Video, ClipboardList, LogOut, Wallet } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
 
@@ -18,6 +18,8 @@ export default function Sidebar() {
   const router = useRouter()
   const user = useStore((state) => state.user)
   const setUser = useStore((state) => state.setUser)
+
+  const isCameraman = user?.role === 'cameraman'
 
   const handleLogout = () => {
     setUser(null)
@@ -54,6 +56,22 @@ export default function Sidebar() {
             </Link>
           )
         })}
+
+        {/* Income tab - only for cameraman */}
+        {isCameraman && (
+          <Link
+            href="/dashboard/income"
+            className={cn(
+              'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
+              pathname === '/dashboard/income'
+                ? 'bg-brand-pink/20 text-brand-pink border-l-4 border-brand-pink'
+                : 'text-brand-text-secondary hover:bg-brand-elevated hover:text-white'
+            )}
+          >
+            <Wallet className="w-5 h-5" />
+            <span className="font-medium">Thu nhập</span>
+          </Link>
+        )}
       </nav>
 
       {/* User section */}
