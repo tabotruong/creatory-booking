@@ -19,46 +19,30 @@ export default function EquipmentChecklist({ items, onChange }: EquipmentCheckli
     onChange(updated)
   }
 
-  const checkedCount = items.filter((i) => i.checked).length
-  const progress = Math.round((checkedCount / items.length) * 100)
-
   return (
-    <div className="space-y-4">
-      {/* Progress */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-2 bg-brand-border rounded-full overflow-hidden">
-          <div
-            className="h-full bg-brand-green transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <span className="text-sm text-brand-text-secondary">
-          {checkedCount}/{items.length}
-        </span>
-      </div>
-
-      {/* Checklist */}
+    <div className="space-y-2">
+      <p className="text-sm text-brand-text-secondary mb-3">Tick chọn thiết bị cần mang theo:</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {items.map((item) => (
           <button
             key={item.id}
             onClick={() => toggleItem(item.id)}
             className={cn(
-              'flex items-center gap-3 p-3 rounded-lg border transition-all',
+              'flex items-center gap-3 p-3 rounded-lg border transition-all text-left',
               item.checked
-                ? 'bg-brand-green/20 border-brand-green text-white'
+                ? 'bg-brand-pink/20 border-brand-pink text-white'
                 : 'bg-brand-elevated border-brand-border text-brand-text-secondary hover:border-brand-pink/50'
             )}
           >
             <div
               className={cn(
-                'w-6 h-6 rounded border-2 flex items-center justify-center transition-colors',
+                'w-5 h-5 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0',
                 item.checked
-                  ? 'bg-brand-green border-brand-green'
+                  ? 'bg-brand-pink border-brand-pink'
                   : 'border-brand-border'
               )}
             >
-              {item.checked && <Check className="w-4 h-4 text-white" />}
+              {item.checked && <Check className="w-3 h-3 text-white" />}
             </div>
             <span className="text-sm">{item.name}</span>
           </button>

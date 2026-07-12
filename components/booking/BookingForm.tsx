@@ -366,7 +366,7 @@ export default function BookingForm({ isOpen, onClose, editBooking }: BookingFor
               <div className="text-white">{formData.mcName === 'Brand' ? formData.brandName : formData.mcName}</div>
               <div className="text-brand-text-secondary">Content:</div>
               <div className="text-white">{formData.contentName}</div>
-              <div className="text-brand-text-secondary">Loại hình:</div>
+              <div className="text-brand-text-secondary">Loại content:</div>
               <div className="text-white">{formData.type} - {formData.sow}</div>
               <div className="text-brand-text-secondary">Nền tảng:</div>
               <div className="text-white">{formData.platforms.join(', ')}</div>

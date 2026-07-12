@@ -24,6 +24,9 @@ export const DEMO_USERS: User[] = [
 ]
 
 export const EQUIPMENT_LIST: string[] = [
+  'Sony A7CII',
+  'DJI Pocket 3',
+  'DJI Action Cam',
   'Tripod Ulanzi (đèn cầm tay)',
   'Tripod DJI Pocket 3',
   'Pin FZ100',

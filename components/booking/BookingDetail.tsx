@@ -225,7 +225,7 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
               icon={<Video className="w-4 h-4" />}
             />
             <InfoRow
-              label="Loại hình"
+              label="Loại content"
               value={
                 <span className="px-2 py-0.5 rounded bg-brand-blue/20 text-blue-400">
                   {booking.type}

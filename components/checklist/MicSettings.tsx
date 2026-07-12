@@ -12,9 +12,7 @@ interface MicSettingsProps {
 export default function MicSettingsForm({ settings, onChange }: MicSettingsProps) {
   return (
     <div className="space-y-4">
-      <h4 className="font-medium text-white flex items-center gap-2">
-        🎤 Mic Settings
-      </h4>
+      <h4 className="font-medium text-white">Micro Setting</h4>
 
       <div className="grid grid-cols-2 gap-4">
         <Toggle
@@ -29,13 +27,10 @@ export default function MicSettingsForm({ settings, onChange }: MicSettingsProps
           onChange={(v) => onChange({ ...settings, recordStatus: v })}
         />
 
-        <Input
+        <Toggle
           label="Gain"
-          type="number"
-          min={0}
-          max={100}
-          value={settings.gain}
-          onChange={(e) => onChange({ ...settings, gain: Number(e.target.value) })}
+          checked={settings.gain > 0}
+          onChange={(v) => onChange({ ...settings, gain: v ? 50 : 0 })}
         />
       </div>
     </div>

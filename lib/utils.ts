@@ -42,9 +42,9 @@ export function getStatusConfig(booking: Booking) {
   if (booking.isModified) {
     return {
       bg: 'border-l-orange-500',
-      boxBg: 'bg-orange-500/20',
-      badge: 'bg-orange-500/30 text-orange-300',
-      label: 'CẦN XÁC NHẬN',
+      boxBg: 'bg-orange-500/30',
+      badge: 'bg-orange-500 text-white',
+      label: 'Đã thay đổi',
       dotColor: 'bg-orange-500',
     }
   }
