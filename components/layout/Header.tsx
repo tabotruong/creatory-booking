@@ -12,9 +12,10 @@ interface HeaderProps {
   title: string
   onMenuClick?: () => void
   showMenuButton?: boolean
+  onNotificationClick?: (bookingId: string | undefined) => void
 }
 
-export default function Header({ title, onMenuClick, showMenuButton = false }: HeaderProps) {
+export default function Header({ title, onMenuClick, showMenuButton = false, onNotificationClick }: HeaderProps) {
   const [showNotifications, setShowNotifications] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const router = useRouter()
@@ -75,7 +76,13 @@ export default function Header({ title, onMenuClick, showMenuButton = false }: H
                       notifications.slice(0, 10).map((notif) => (
                         <div
                           key={notif.id}
-                          onClick={() => markNotificationRead(notif.id)}
+                          onClick={() => {
+                            markNotificationRead(notif.id)
+                            setShowNotifications(false)
+                            if (onNotificationClick) {
+                              onNotificationClick(notif.bookingId)
+                            }
+                          }}
                           className={cn(
                             'p-4 border-b border-brand-border cursor-pointer hover:bg-brand-elevated transition-colors',
                             !notif.read && 'bg-brand-pink/5'

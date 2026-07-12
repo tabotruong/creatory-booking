@@ -178,6 +178,10 @@ export default function DashboardPage() {
               selectedCameramen={assignedCameramen}
               onChange={setAssignedCameramen}
               requiredCount={selectedBooking.cameraCount}
+              bookingDate={selectedBooking.date}
+              bookingStartTime={selectedBooking.startTime}
+              bookingEndTime={selectedBooking.endTime}
+              excludeBookingId={selectedBooking.id}
             />
 
             <div className="flex gap-3 justify-end pt-4 border-t border-brand-border">

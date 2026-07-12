@@ -1,6 +1,6 @@
 'use client'
 
-import { Check } from 'lucide-react'
+import { useStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
 import { CAMERAMEN_LIST } from '@/lib/constants'
 
@@ -8,14 +8,44 @@ interface CameramanSelectorProps {
   selectedCameramen: string[]
   onChange: (cameramen: string[]) => void
   requiredCount: number
+  bookingDate: string
+  bookingStartTime: string
+  bookingEndTime: string
+  excludeBookingId?: string
 }
 
 export default function CameramanSelector({
   selectedCameramen,
   onChange,
   requiredCount,
+  bookingDate,
+  bookingStartTime,
+  bookingEndTime,
+  excludeBookingId,
 }: CameramanSelectorProps) {
+  const bookings = useStore((state) => state.bookings)
+
+  // Check if a cameraman has a conflicting booking
+  const getCameramanConflict = (cameramanName: string): string | null => {
+    const conflictingBooking = bookings.find(b => {
+      if (b.id === excludeBookingId) return false
+      if (!b.assignedCameramen.includes(cameramanName)) return false
+      if (b.date !== bookingDate) return false
+      // Check time overlap
+      const bStart = b.startTime.replace(':', '')
+      const bEnd = b.endTime.replace(':', '')
+      const newStart = bookingStartTime.replace(':', '')
+      const newEnd = bookingEndTime.replace(':', '')
+      return (newStart < bEnd && newEnd > bStart)
+    })
+    return conflictingBooking ? conflictingBooking.contentName : null
+  }
+
   const toggleCameraman = (name: string) => {
+    // Don't allow if there's a conflict
+    if (!selectedCameramen.includes(name) && getCameramanConflict(name)) {
+      return
+    }
     if (selectedCameramen.includes(name)) {
       onChange(selectedCameramen.filter((n) => n !== name))
     } else {
@@ -40,21 +70,33 @@ export default function CameramanSelector({
         {CAMERAMEN_LIST.map((name, index) => {
           const isSelected = selectedCameramen.includes(name)
           const selectionIndex = selectedCameramen.indexOf(name)
+          const conflict = getCameramanConflict(name)
+          const isDisabled = !!conflict && !isSelected
 
           return (
             <button
               key={name}
               type="button"
               onClick={() => toggleCameraman(name)}
+              disabled={!!isDisabled}
               className={cn(
                 'relative flex items-center justify-center gap-2 px-4 py-3 rounded-lg border transition-all duration-200',
                 isSelected
                   ? 'bg-brand-pink/20 border-brand-pink text-white'
+                  : isDisabled
+                  ? 'bg-brand-dark/50 border-brand-border text-brand-text-secondary/40 cursor-not-allowed'
                   : 'bg-brand-elevated border-brand-border text-brand-text-secondary hover:border-brand-pink/50'
               )}
             >
               <span className="text-lg">{isSelected ? '✓' : ''}</span>
-              <span className="font-medium">{name}</span>
+              <span className={cn('font-medium', isDisabled && 'line-through opacity-50')}>{name}</span>
+
+              {/* Conflict indicator */}
+              {conflict && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full text-[10px] text-white flex items-center justify-center" title={`Trùng: ${conflict}`}>
+                  !
+                </span>
+              )}
 
               {/* Selection order badge */}
               {isSelected && selectionIndex >= 0 && (

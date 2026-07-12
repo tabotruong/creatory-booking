@@ -51,6 +51,7 @@ export interface Notification {
   type: 'info' | 'success' | 'warning' | 'error'
   read: boolean
   createdAt: string
+  bookingId?: string // Link to related booking
 }
 
 export interface Toast {

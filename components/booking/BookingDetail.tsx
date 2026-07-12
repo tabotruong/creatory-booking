@@ -29,6 +29,7 @@ import { useStore } from '@/lib/store'
 import { Booking } from '@/lib/types'
 import { formatDate, getStatusConfig, isRecording, cn } from '@/lib/utils'
 import { CAMERAMEN_LIST } from '@/lib/constants'
+import { useRouter } from 'next/navigation'
 
 interface BookingDetailProps {
   booking: Booking | null
@@ -67,7 +68,9 @@ function SectionTitle({ icon, title }: { icon: React.ReactNode; title: string })
 }
 
 export default function BookingDetail({ booking, isOpen, onClose, onEdit }: BookingDetailProps) {
+  const router = useRouter()
   const user = useStore((state) => state.user)
+  const bookings = useStore((state) => state.bookings)
   const updateBooking = useStore((state) => state.updateBooking)
   const deleteBooking = useStore((state) => state.deleteBooking)
   const approveBooking = useStore((state) => state.approveBooking)
@@ -83,7 +86,7 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
   const recording = isRecording(booking)
   const isManager = user?.role === 'manager'
   const isContentTeam = user?.role === 'content_team'
-  const canEdit = (isManager || isContentTeam) && booking.status === 'pending'
+  const canEdit = isManager || isContentTeam // Tất cả các role đều có thể sửa
   const canDelete = isManager || (isContentTeam && booking.status === 'pending')
   const canApprove = isManager && booking.status === 'pending'
   const canReject = isManager && booking.status === 'pending'
@@ -91,10 +94,12 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
 
   const handleApprove = () => {
     approveBooking(booking.id)
+    onClose()
   }
 
   const handleReject = () => {
     rejectBooking(booking.id)
+    onClose()
   }
 
   const handleDelete = () => {
@@ -119,6 +124,28 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
   const handleAssignCameraman = () => {
     updateBooking(booking.id, { assignedCameramen: selectedCameramen })
     setShowCameramanDropdown(false)
+  }
+
+  // Check cameraman conflict
+  const getCameramanConflict = (cameramanName: string): string | null => {
+    const conflictingBooking = bookings.find(b => {
+      if (b.id === booking.id) return false
+      if (!b.assignedCameramen.includes(cameramanName)) return false
+      if (b.date !== booking.date) return false
+      const bStart = b.startTime.replace(':', '')
+      const bEnd = b.endTime.replace(':', '')
+      const newStart = booking.startTime.replace(':', '')
+      const newEnd = booking.endTime.replace(':', '')
+      return (newStart < bEnd && newEnd > bStart)
+    })
+    return conflictingBooking ? conflictingBooking.contentName : null
+  }
+
+  const handleToggleCameramanWithConflict = (name: string) => {
+    if (!selectedCameramen.includes(name) && getCameramanConflict(name)) {
+      return
+    }
+    handleToggleCameraman(name)
   }
 
   // Equipment list for display
@@ -329,22 +356,34 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
                   </Button>
                 ) : (
                   <div className="space-y-3">
-                    <p className="text-sm text-brand-text-secondary">Chọn Cameraman:</p>
+                    <p className="text-sm text-brand-text-secondary">Chọn Cameraman (màu chìm = đã có lịch trùng):</p>
                     <div className="flex flex-wrap gap-2">
-                      {CAMERAMEN_LIST.map((name) => (
-                        <button
-                          key={name}
-                          onClick={() => handleToggleCameraman(name)}
-                          className={cn(
-                            'px-3 py-1.5 rounded-lg border text-sm font-medium transition-all',
-                            selectedCameramen.includes(name)
-                              ? 'bg-brand-pink/20 border-brand-pink text-white'
-                              : 'bg-brand-dark border-brand-border text-brand-text-secondary hover:border-brand-pink/50'
-                          )}
-                        >
-                          {name}
-                        </button>
-                      ))}
+                      {CAMERAMEN_LIST.map((name) => {
+                        const conflict = getCameramanConflict(name)
+                        const isDisabled = !!conflict && !selectedCameramen.includes(name)
+                        return (
+                          <button
+                            key={name}
+                            onClick={() => handleToggleCameramanWithConflict(name)}
+                            disabled={!!isDisabled}
+                            className={cn(
+                              'relative px-3 py-1.5 rounded-lg border text-sm font-medium transition-all',
+                              selectedCameramen.includes(name)
+                                ? 'bg-brand-pink/20 border-brand-pink text-white'
+                                : isDisabled
+                                ? 'bg-brand-dark/50 border-brand-border text-brand-text-secondary/40 cursor-not-allowed'
+                                : 'bg-brand-dark border-brand-border text-brand-text-secondary hover:border-brand-pink/50'
+                            )}
+                          >
+                            <span className={cn(isDisabled && 'line-through opacity-50')}>{name}</span>
+                            {conflict && (
+                              <span className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full text-[10px] text-white flex items-center justify-center" title={`Trùng: ${conflict}`}>
+                                !
+                              </span>
+                            )}
+                          </button>
+                        )
+                      })}
                     </div>
                     <div className="flex gap-2 pt-2">
                       <Button
@@ -461,7 +500,7 @@ function EquipmentItem({ icon, label, enabled }: { icon: React.ReactNode; label:
             enabled ? 'bg-brand-pink text-white' : 'bg-brand-border text-brand-text-secondary'
           )}
         >
-          {enabled ? 'ON' : 'OFF'}
+          {enabled ? 'YES' : 'NO'}
         </span>
       </div>
     </div>

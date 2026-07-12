@@ -38,7 +38,7 @@ interface BookingStore {
 
   // Notifications
   notifications: Notification[]
-  addNotification: (title: string, message: string, type: Notification['type']) => void
+  addNotification: (title: string, message: string, type: Notification['type'], bookingId?: string) => void
   markNotificationRead: (id: string) => void
   clearNotifications: () => void
 
@@ -91,7 +91,8 @@ export const useStore = create<BookingStore>()(
         get().addNotification(
           'Yêu cầu mới',
           `${bookingData.createdByName} vừa tạo booking "${bookingData.contentName}"`,
-          'info'
+          'info',
+          newBooking.id
         )
 
         get().showToast('Đã tạo booking thành công!', 'success')
@@ -129,7 +130,8 @@ export const useStore = create<BookingStore>()(
           get().addNotification(
             'Booking được duyệt',
             `Booking "${booking.contentName}" đã được duyệt`,
-            'success'
+            'success',
+            id
           )
 
           get().showToast('Đã duyệt booking!', 'success')
@@ -150,7 +152,8 @@ export const useStore = create<BookingStore>()(
           get().addNotification(
             'Booking bị từ chối',
             `Booking "${booking.contentName}" đã bị từ chối`,
-            'error'
+            'error',
+            id
           )
 
           get().showToast('Đã từ chối booking!', 'error')
@@ -159,7 +162,7 @@ export const useStore = create<BookingStore>()(
 
       // Notifications
       notifications: [],
-      addNotification: (title, message, type) => {
+      addNotification: (title, message, type, bookingId?: string) => {
         const notification: Notification = {
           id: generateId(),
           title,
@@ -167,6 +170,7 @@ export const useStore = create<BookingStore>()(
           type,
           read: false,
           createdAt: new Date().toISOString(),
+          bookingId,
         }
         set((state) => ({
           notifications: [notification, ...state.notifications],

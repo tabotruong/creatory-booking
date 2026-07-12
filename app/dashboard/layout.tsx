@@ -5,12 +5,16 @@ import { useRouter } from 'next/navigation'
 import { Sidebar, Header, MobileNav } from '@/components/layout'
 import { Toast } from '@/components/ui'
 import { useStore } from '@/lib/store'
+import { BookingDetail } from '@/components/booking'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const user = useStore((state) => state.user)
+  const bookings = useStore((state) => state.bookings)
   const [showMobileNav, setShowMobileNav] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [showDetail, setShowDetail] = useState(false)
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -31,6 +35,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     )
   }
 
+  const handleNotificationClick = (bookingId: string | undefined) => {
+    if (bookingId) {
+      const booking = bookings.find(b => b.id === bookingId)
+      if (booking) {
+        setSelectedBookingId(bookingId)
+        setShowDetail(true)
+      }
+    }
+  }
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
@@ -42,6 +56,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           title="Creatory"
           onMenuClick={() => setShowMobileNav(true)}
           showMenuButton
+          onNotificationClick={handleNotificationClick}
+        />
+
+        {/* Booking Detail Modal for notifications */}
+        <BookingDetail
+          booking={selectedBookingId ? bookings.find(b => b.id === selectedBookingId) || null : null}
+          isOpen={showDetail}
+          onClose={() => {
+            setShowDetail(false)
+            setSelectedBookingId(null)
+          }}
+          onEdit={() => {}}
         />
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </div>
