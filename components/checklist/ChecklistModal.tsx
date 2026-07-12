@@ -56,7 +56,7 @@ export default function ChecklistModal({ isOpen, onClose, bookingId }: Checklist
 
   const tabs = [
     { id: 'equipment' as const, label: 'Thiết bị' },
-    { id: 'camera' as const, label: 'Camera' },
+    { id: 'camera' as const, label: 'Camera Setting' },
     { id: 'mic' as const, label: 'Micro' },
   ]
 

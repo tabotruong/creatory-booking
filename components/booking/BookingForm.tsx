@@ -115,7 +115,7 @@ export default function BookingForm({ isOpen, onClose, editBooking }: BookingFor
       assignedCameramen: editBooking?.assignedCameramen || [],
       createdBy: user.id,
       createdByName: user.name,
-      isModified: false,
+      isModified: !!editBooking, // Mark as modified if editing existing booking
     }
 
     if (editBooking) {
@@ -240,6 +240,15 @@ export default function BookingForm({ isOpen, onClose, editBooking }: BookingFor
               options={CONTENT_TYPES.map((t) => ({ value: t, label: t }))}
               required
             />
+            {formData.type === 'Brand' && (
+              <Input
+                label="Tên Brand"
+                value={formData.brandName}
+                onChange={(e) => setFormData({ ...formData, brandName: e.target.value })}
+                placeholder="Tên brand"
+                required
+              />
+            )}
             <Select
               label="SOW"
               value={formData.sow}

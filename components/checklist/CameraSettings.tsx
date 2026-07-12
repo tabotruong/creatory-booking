@@ -15,60 +15,78 @@ export default function CameraSettingsForm({ settings, onChange }: CameraSetting
     <div className="space-y-4">
       <h4 className="font-medium text-white">Camera Setting</h4>
 
-      <div className="space-y-3">
-        <Toggle
-          label="Format thẻ"
-          checked={settings.cardFormat}
-          onChange={(v) => onChange({ ...settings, cardFormat: v })}
-        />
+      <div className="space-y-5">
+        <div className="py-1">
+          <Toggle
+            label="Format thẻ"
+            checked={settings.cardFormat}
+            onChange={(v) => onChange({ ...settings, cardFormat: v })}
+          />
+        </div>
 
-        <Toggle
-          label="PP"
-          checked={settings.pp}
-          onChange={(v) => onChange({ ...settings, pp: v })}
-        />
+        <div className="py-1">
+          <Toggle
+            label="PP"
+            checked={settings.pp}
+            onChange={(v) => onChange({ ...settings, pp: v })}
+          />
+        </div>
 
-        <Toggle
-          label="Aperture"
-          checked={settings.aputure}
-          onChange={(v) => onChange({ ...settings, aputure: v })}
-        />
+        <div className="py-1">
+          <Toggle
+            label="Aperture"
+            checked={settings.aputure}
+            onChange={(v) => onChange({ ...settings, aputure: v })}
+          />
+        </div>
 
-        <Toggle
-          label="Resolution"
-          checked={settings.resolution === '4K'}
-          onChange={(v) => onChange({ ...settings, resolution: v ? '4K' : 'FullHD' })}
-        />
+        <div className="py-1">
+          <Toggle
+            label="Resolution"
+            checked={settings.resolution === '4K'}
+            onChange={(v) => onChange({ ...settings, resolution: v ? '4K' : 'FullHD' })}
+          />
+        </div>
 
-        <Toggle
-          label={`FPS (${settings.fps})`}
-          checked={settings.fps === 60}
-          onChange={(v) => onChange({ ...settings, fps: v ? 60 : 30 })}
-        />
+        <div className="py-1">
+          <Toggle
+            label="FPS"
+            checked={settings.fps === 60}
+            onChange={(v) => onChange({ ...settings, fps: v ? 60 : 30 })}
+          />
+        </div>
 
-        <Toggle
-          label={`ISO (${settings.iso})`}
-          checked={settings.iso > 0}
-          onChange={(v) => onChange({ ...settings, iso: v ? 800 : 0 })}
-        />
+        <div className="py-1">
+          <Toggle
+            label="ISO"
+            checked={settings.iso > 0}
+            onChange={(v) => onChange({ ...settings, iso: v ? 800 : 0 })}
+          />
+        </div>
 
-        <Toggle
-          label={`Shutter (${settings.shutterSpeed})`}
-          checked={settings.shutterSpeed !== ''}
-          onChange={(v) => onChange({ ...settings, shutterSpeed: v ? '1/50' : 'Auto' })}
-        />
+        <div className="py-1">
+          <Toggle
+            label="Shutter"
+            checked={settings.shutterSpeed !== ''}
+            onChange={(v) => onChange({ ...settings, shutterSpeed: v ? '1/50' : 'Auto' })}
+          />
+        </div>
 
-        <Toggle
-          label={`WB (${settings.wb})`}
-          checked={settings.wb !== 'Auto'}
-          onChange={(v) => onChange({ ...settings, wb: v ? '5600K' : 'Auto' })}
-        />
+        <div className="py-1">
+          <Toggle
+            label="WB"
+            checked={settings.wb !== 'Auto'}
+            onChange={(v) => onChange({ ...settings, wb: v ? '5600K' : 'Auto' })}
+          />
+        </div>
 
-        <Toggle
-          label={`Rec Level (${settings.recLevel})`}
-          checked={settings.recLevel > 0}
-          onChange={(v) => onChange({ ...settings, recLevel: v ? 50 : 0 })}
-        />
+        <div className="py-1">
+          <Toggle
+            label="Rec Level"
+            checked={settings.recLevel > 0}
+            onChange={(v) => onChange({ ...settings, recLevel: v ? 50 : 0 })}
+          />
+        </div>
       </div>
     </div>
   )

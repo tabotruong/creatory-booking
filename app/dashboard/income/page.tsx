@@ -134,12 +134,12 @@ export default function IncomePage() {
   const totalIncome = workSessions.reduce((sum, s) => sum + s.pay, 0)
   const totalHours = workSessions.reduce((sum, s) => sum + s.hours, 0)
 
-  if (user?.role !== 'cameraman') {
+  if (user?.role !== 'cameraman' && user?.role !== 'manager') {
     return (
       <div className="text-center py-12">
         <h2 className="text-xl font-semibold text-white mb-2">Thu nhập</h2>
         <p className="text-brand-text-secondary">
-          Trang này chỉ dành cho Cameraman
+          Trang này chỉ dành cho Cameraman và Quản lý
         </p>
       </div>
     )
@@ -147,7 +147,9 @@ export default function IncomePage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold font-display text-white">Thu nhập</h2>
+      <h2 className="text-lg font-semibold font-display text-white">
+        {user?.role === 'manager' ? 'Bảng lương Cameraman' : 'Thu nhập của tôi'}
+      </h2>
 
       {/* Billing Period Info */}
       <div className="bg-brand-surface border border-brand-border rounded-xl p-4">

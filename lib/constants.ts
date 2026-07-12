@@ -11,7 +11,7 @@ export const CONTENT_TYPES = ['Daily content', 'SPS', 'Brand'] as const
 export const SOW_TYPES = ['Photoshoot', 'Video', 'Livestream'] as const
 
 export const DEMO_USERS: User[] = [
-  { id: '1', email: 'manager@creatory.vn', name: 'Minh Quản Lý', role: 'manager', avatar: '👨‍💼' },
+  { id: '1', email: 'manager@creatory.vn', name: 'Tabo', role: 'manager', avatar: '👨‍💼' },
   { id: '2', email: 'dat@creatory.vn', name: 'Đạt', role: 'cameraman', avatar: '🎥' },
   { id: '3', email: 'giang@creatory.vn', name: 'Giang', role: 'cameraman', avatar: '🎥' },
   { id: '4', email: 'huy@creatory.vn', name: 'Huy', role: 'cameraman', avatar: '🎥' },
