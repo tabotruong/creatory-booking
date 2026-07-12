@@ -93,7 +93,7 @@ export default function BookingForm({ isOpen, onClose, editBooking }: BookingFor
         notes: '',
       })
     }
-  })
+  }, [isOpen, editBooking])
 
   const handlePlatformToggle = (platform: Platform) => {
     setFormData((prev) => ({
