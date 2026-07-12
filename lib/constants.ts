@@ -19,8 +19,9 @@ export const DEMO_USERS: User[] = [
   { id: '6', email: 'thuc@creatory.vn', name: 'Thức', role: 'cameraman', avatar: '🎥' },
   { id: '7', email: 'hung@creatory.vn', name: 'Hùng', role: 'cameraman', avatar: '🎥' },
   { id: '8', email: 'tabo@creatory.vn', name: 'Tabo', role: 'cameraman', avatar: '🎥' },
-  { id: '9', email: 'content1@creatory.vn', name: 'Trần Thị A', role: 'content_team', avatar: '👩‍💻' },
-  { id: '10', email: 'content2@creatory.vn', name: 'Nguyễn Văn B', role: 'content_team', avatar: '👨‍💻' },
+  { id: '9', email: 'content1@creatory.vn', name: 'Nhung Trợ Lý', role: 'content_team', avatar: '👩‍💻' },
+  { id: '10', email: 'content2@creatory.vn', name: 'Ngô Diệc Phy', role: 'content_team', avatar: '👨‍💻' },
+  { id: '11', email: 'producer@creatory.vn', name: 'Đội Thanh Thanh', role: 'producer', avatar: '🎬' },
 ]
 
 export const EQUIPMENT_LIST: string[] = [
@@ -73,6 +74,7 @@ export const ROLE_LABELS: Record<User['role'], string> = {
   manager: 'Quản lý',
   cameraman: 'Cameraman',
   content_team: 'Content Team',
+  producer: 'Producer',
 }
 
 export const STATUS_LABELS: Record<Booking['status'], string> = {

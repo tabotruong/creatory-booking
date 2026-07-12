@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Calendar, Video, ClipboardList, LogOut, Wallet, AlertCircle } from 'lucide-react'
+import { LayoutDashboard, Calendar, Video, ClipboardList, LogOut, Wallet, AlertCircle, Users } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
 
@@ -87,6 +87,22 @@ export default function Sidebar() {
           >
             <AlertCircle className="w-5 h-5" />
             <span className="font-medium">Ghi chú/Vấn đề</span>
+          </Link>
+        )}
+
+        {/* Cameramen - only for manager */}
+        {isManager && (
+          <Link
+            href="/dashboard/cameramen"
+            className={cn(
+              'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
+              pathname === '/dashboard/cameramen'
+                ? 'bg-brand-pink/20 text-brand-pink border-l-4 border-brand-pink'
+                : 'text-brand-text-secondary hover:bg-brand-elevated hover:text-white'
+            )}
+          >
+            <Users className="w-5 h-5" />
+            <span className="font-medium">Cameraman</span>
           </Link>
         )}
       </nav>

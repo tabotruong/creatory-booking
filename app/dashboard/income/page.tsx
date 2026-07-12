@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useStore } from '@/lib/store'
-import { format, isWithinInterval, startOfMonth, endOfMonth, subMonths } from 'date-fns'
+import { format, isWithinInterval, subMonths } from 'date-fns'
 import { vi } from 'date-fns/locale'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -21,7 +21,6 @@ interface WorkSession {
 }
 
 // Round time according to rules
-// Check-in: 6:00-6:15 → 6:00 | 6:16-6:30 → 6:30 | 6:31-6:40 → 6:30 | 6:41-6:59 → 7:00
 function roundCheckIn(time: string): string {
   const [h, m] = time.split(':').map(Number)
   if (m >= 16 && m <= 40) return `${h}:30`
@@ -29,7 +28,6 @@ function roundCheckIn(time: string): string {
   return `${h}:00`
 }
 
-// Check-out: 6:00-6:14 → 6:00 | 6:15-6:39 → 6:30 | 6:40-6:59 → 7:00
 function roundCheckOut(time: string): string {
   const [h, m] = time.split(':').map(Number)
   if (m >= 15 && m <= 39) return `${h}:30`
@@ -37,7 +35,6 @@ function roundCheckOut(time: string): string {
   return `${h}:00`
 }
 
-// Calculate hours between check-in and check-out
 function calculateHours(checkIn: string, checkOut: string): number {
   const roundedIn = roundCheckIn(checkIn)
   const roundedOut = roundCheckOut(checkOut)
@@ -47,14 +44,14 @@ function calculateHours(checkIn: string, checkOut: string): number {
   return totalMinutes / 60
 }
 
-// Calculate pay based on hours
 function calculatePay(hours: number): number {
   if (hours < 4) return 500000
   const extraHours = Math.floor(hours) - 4
   return 500000 + (extraHours * 100000)
 }
 
-// Get billing period for a given month (21st prev month to 20th current month)
+// Get billing period for a given month
+// 21/6-20/7 = salary for July (month 7)
 function getBillingPeriod(year: number, month: number) {
   const startDate = new Date(year, month - 1, 21)
   const endDate = new Date(year, month, 20)
@@ -65,9 +62,9 @@ export default function IncomePage() {
   const user = useStore((state) => state.user)
   const bookings = useStore((state) => state.bookings)
 
-  // For manager: month selector
+  // Default to current month for billing period
   const today = new Date()
-  const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1)
+  const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1) // 1-12
   const [selectedYear, setSelectedYear] = useState(today.getFullYear())
 
   const billingPeriod = useMemo(() => {
@@ -131,6 +128,7 @@ export default function IncomePage() {
 
   const totalIncome = workSessions.reduce((sum, s) => sum + s.pay, 0)
   const totalHours = workSessions.reduce((sum, s) => sum + s.hours, 0)
+  const totalTeamSalary = allCameramenIncome.reduce((sum, c) => sum + c.total, 0)
   const isManager = user?.role === 'manager'
   const isCameraman = user?.role === 'cameraman'
 
@@ -193,6 +191,9 @@ export default function IncomePage() {
           <p className="text-white font-medium">
             {format(billingPeriod.startDate, 'dd/MM/yyyy')} - {format(billingPeriod.endDate, 'dd/MM/yyyy')}
           </p>
+          <span className="text-brand-pink text-sm font-medium">
+            (Lương tháng {format(new Date(selectedYear, selectedMonth - 1), 'MM/yyyy', { locale: vi })})
+          </span>
         </div>
       </div>
 
@@ -227,38 +228,58 @@ export default function IncomePage() {
 
       {/* Team Income Overview - only for manager */}
       {isManager && (
-        <Card>
-          <h3 className="font-medium text-white mb-3">
-            Bảng lương team ({format(new Date(selectedYear, selectedMonth - 1), 'MM/yyyy', { locale: vi })})
-          </h3>
-          <div className="space-y-2">
-            {allCameramenIncome
-              .filter(c => c.count > 0)
-              .sort((a, b) => b.total - a.total)
-              .map(c => (
-                <div
-                  key={c.name}
-                  className={cn(
-                    'flex items-center justify-between p-3 rounded',
-                    c.name === user.name ? 'bg-brand-pink/20 border border-brand-pink/30' : 'bg-brand-elevated'
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-white font-medium">{c.name}</span>
-                    <span className="text-xs text-brand-text-secondary">({c.count} buổi)</span>
+        <>
+          <Card>
+            <h3 className="font-medium text-white mb-3">
+              Bảng lương team ({format(new Date(selectedYear, selectedMonth - 1), 'MM/yyyy', { locale: vi })})
+            </h3>
+            <div className="space-y-2">
+              {allCameramenIncome
+                .filter(c => c.count > 0)
+                .sort((a, b) => b.total - a.total)
+                .map(c => (
+                  <div
+                    key={c.name}
+                    className={cn(
+                      'flex items-center justify-between p-3 rounded',
+                      // Don't highlight Tabo since he's also manager
+                      c.name === user.name && c.name !== 'Tabo'
+                        ? 'bg-brand-pink/20 border border-brand-pink/30'
+                        : 'bg-brand-elevated'
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-white font-medium">{c.name}</span>
+                      <span className="text-xs text-brand-text-secondary">({c.count} buổi)</span>
+                    </div>
+                    <span className={cn(
+                      'text-sm font-bold',
+                      c.name === user.name && c.name !== 'Tabo' ? 'text-brand-pink' : 'text-white'
+                    )}>
+                      {c.total.toLocaleString('vi-VN')}đ
+                    </span>
                   </div>
-                  <span className={cn('text-sm font-bold', c.name === user.name ? 'text-brand-pink' : 'text-white')}>
-                    {c.total.toLocaleString('vi-VN')}đ
-                  </span>
-                </div>
-              ))}
-            {allCameramenIncome.filter(c => c.count > 0).length === 0 && (
-              <p className="text-sm text-brand-text-secondary text-center py-4">
-                Không có dữ liệu trong kỳ này
-              </p>
-            )}
-          </div>
-        </Card>
+                ))}
+              {allCameramenIncome.filter(c => c.count > 0).length === 0 && (
+                <p className="text-sm text-brand-text-secondary text-center py-4">
+                  Không có dữ liệu trong kỳ này
+                </p>
+              )}
+            </div>
+          </Card>
+
+          {/* Total Team Salary */}
+          {allCameramenIncome.filter(c => c.count > 0).length > 0 && (
+            <Card className="border-2 border-brand-pink/30">
+              <div className="flex items-center justify-between">
+                <span className="text-white font-semibold">Tổng lương phải trả team</span>
+                <span className="text-2xl font-bold text-brand-pink">
+                  {totalTeamSalary.toLocaleString('vi-VN')}đ
+                </span>
+              </div>
+            </Card>
+          )}
+        </>
       )}
 
       {/* Sessions List */}

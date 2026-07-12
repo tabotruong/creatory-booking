@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { X, LayoutDashboard, Calendar, Video, ClipboardList, LogOut, Wallet, AlertCircle } from 'lucide-react'
+import { X, LayoutDashboard, Calendar, Video, ClipboardList, LogOut, Wallet, AlertCircle, Users } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
 
@@ -128,6 +128,21 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
             >
               <AlertCircle className="w-5 h-5" />
               <span className="font-medium">Ghi chú/Vấn đề</span>
+            </Link>
+          )}
+          {user?.role === 'manager' && (
+            <Link
+              href="/dashboard/cameramen"
+              onClick={onClose}
+              className={cn(
+                'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
+                pathname === '/dashboard/cameramen'
+                  ? 'bg-brand-pink/20 text-brand-pink'
+                  : 'text-brand-text-secondary hover:bg-brand-elevated hover:text-white'
+              )}
+            >
+              <Users className="w-5 h-5" />
+              <span className="font-medium">Cameraman</span>
             </Link>
           )}
         </nav>
