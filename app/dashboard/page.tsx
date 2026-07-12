@@ -24,7 +24,7 @@ export default function DashboardPage() {
 
   const isManager = user?.role === 'manager'
   const isCameraman = user?.role === 'cameraman'
-  const isContentTeam = user?.role === 'content_team'
+  const isContentTeam = user?.role === 'content_team' || user?.role === 'producer'
   const today = getCurrentDateStr()
 
   // Stats - only for manager/content_team

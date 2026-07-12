@@ -110,20 +110,22 @@ export default function IncomePage() {
       .sort((a, b) => b.date.localeCompare(a.date))
   }, [user, bookings, billingPeriod])
 
-  // Get all cameraman's income summary for manager
+  // Get all cameraman's income summary for manager (exclude Tabo)
   const allCameramenIncome = useMemo(() => {
-    return CAMERAMEN_LIST.map(name => {
-      const sessions = bookings
-        .filter(b => {
-          if (!b.assignedCameramen.includes(name)) return false
-          if (b.status !== 'approved') return false
-          const bookingDate = new Date(b.date)
-          return isWithinInterval(bookingDate, { start: billingPeriod.startDate, end: billingPeriod.endDate })
-        })
-        .map(b => calculatePay(calculateHours(b.startTime, b.endTime)))
-      const total = sessions.reduce((sum, p) => sum + p, 0)
-      return { name, total, count: sessions.length }
-    })
+    return CAMERAMEN_LIST
+      .filter(name => name !== 'Tabo') // Exclude Tabo from team income
+      .map(name => {
+        const sessions = bookings
+          .filter(b => {
+            if (!b.assignedCameramen.includes(name)) return false
+            if (b.status !== 'approved') return false
+            const bookingDate = new Date(b.date)
+            return isWithinInterval(bookingDate, { start: billingPeriod.startDate, end: billingPeriod.endDate })
+          })
+          .map(b => calculatePay(calculateHours(b.startTime, b.endTime)))
+        const total = sessions.reduce((sum, p) => sum + p, 0)
+        return { name, total, count: sessions.length }
+      })
   }, [bookings, billingPeriod])
 
   const totalIncome = workSessions.reduce((sum, s) => sum + s.pay, 0)
@@ -192,39 +194,43 @@ export default function IncomePage() {
             {format(billingPeriod.startDate, 'dd/MM/yyyy')} - {format(billingPeriod.endDate, 'dd/MM/yyyy')}
           </p>
           <span className="text-brand-pink text-sm font-medium">
-            (Lương tháng {format(new Date(selectedYear, selectedMonth - 1), 'MM/yyyy', { locale: vi })})
+            (Lương tháng {format(billingPeriod.endDate, 'MM/yyyy', { locale: vi })})
           </span>
         </div>
       </div>
 
-      {/* Summary Cards - for cameraman or manager viewing own data */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="text-center">
-          <p className="text-sm text-brand-text-secondary mb-2">Tổng thu nhập</p>
-          <p className="text-2xl font-bold text-brand-pink">
-            {totalIncome.toLocaleString('vi-VN')}đ
-          </p>
-        </Card>
-        <Card className="text-center">
-          <p className="text-sm text-brand-text-secondary mb-2">Tổng giờ làm</p>
-          <p className="text-2xl font-bold text-white">
-            {Math.round(totalHours * 10) / 10}h
-          </p>
-        </Card>
-      </div>
-
-      {/* Payment Rules */}
-      <Card>
-        <h3 className="font-medium text-white mb-3">Cách tính lương</h3>
-        <div className="space-y-2 text-sm text-brand-text-secondary">
-          <p>• Dưới 4 giờ: <span className="text-white">500,000đ</span></p>
-          <p>• Từ giờ thứ 5 trở đi: <span className="text-white">+100,000đ/giờ</span></p>
-          <p className="text-xs mt-3 border-t border-brand-border pt-2">
-            Check-in: 6:00-6:15 → 6:00 | 6:16-6:40 → 6:30 | 6:41-6:59 → 7:00<br />
-            Check-out: 6:00-6:14 → 6:00 | 6:15-6:39 → 6:30 | 6:40-6:59 → 7:00
-          </p>
+      {/* Summary Cards - only for cameraman (manager doesn't see own income) */}
+      {!isManager && (
+        <div className="grid grid-cols-2 gap-4">
+          <Card className="text-center">
+            <p className="text-sm text-brand-text-secondary mb-2">Tổng thu nhập</p>
+            <p className="text-2xl font-bold text-brand-pink">
+              {totalIncome.toLocaleString('vi-VN')}đ
+            </p>
+          </Card>
+          <Card className="text-center">
+            <p className="text-sm text-brand-text-secondary mb-2">Tổng giờ làm</p>
+            <p className="text-2xl font-bold text-white">
+              {Math.round(totalHours * 10) / 10}h
+            </p>
+          </Card>
         </div>
-      </Card>
+      )}
+
+      {/* Payment Rules - only for cameraman */}
+      {!isManager && (
+        <Card>
+          <h3 className="font-medium text-white mb-3">Cách tính lương</h3>
+          <div className="space-y-2 text-sm text-brand-text-secondary">
+            <p>• Dưới 4 giờ: <span className="text-white">500,000đ</span></p>
+            <p>• Từ giờ thứ 5 trở đi: <span className="text-white">+100,000đ/giờ</span></p>
+            <p className="text-xs mt-3 border-t border-brand-border pt-2">
+              Check-in: 6:00-6:15 → 6:00 | 6:16-6:40 → 6:30 | 6:41-6:59 → 7:00<br />
+              Check-out: 6:00-6:14 → 6:00 | 6:15-6:39 → 6:30 | 6:40-6:59 → 7:00
+            </p>
+          </div>
+        </Card>
+      )}
 
       {/* Team Income Overview - only for manager */}
       {isManager && (
@@ -242,20 +248,15 @@ export default function IncomePage() {
                     key={c.name}
                     className={cn(
                       'flex items-center justify-between p-3 rounded',
-                      // Don't highlight Tabo since he's also manager
-                      c.name === user.name && c.name !== 'Tabo'
-                        ? 'bg-brand-pink/20 border border-brand-pink/30'
-                        : 'bg-brand-elevated'
+                      // No highlight since Tabo excluded
+                      'bg-brand-elevated'
                     )}
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-white font-medium">{c.name}</span>
                       <span className="text-xs text-brand-text-secondary">({c.count} buổi)</span>
                     </div>
-                    <span className={cn(
-                      'text-sm font-bold',
-                      c.name === user.name && c.name !== 'Tabo' ? 'text-brand-pink' : 'text-white'
-                    )}>
+                    <span className="text-sm font-bold text-white">
                       {c.total.toLocaleString('vi-VN')}đ
                     </span>
                   </div>
@@ -282,8 +283,8 @@ export default function IncomePage() {
         </>
       )}
 
-      {/* Sessions List */}
-      {workSessions.length === 0 ? (
+      {/* Sessions List - only for cameraman */}
+      {!isManager && (workSessions.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-brand-text-secondary">Chưa có lịch quay nào trong kỳ này</p>
         </div>
@@ -311,7 +312,7 @@ export default function IncomePage() {
             </Card>
           ))}
         </div>
-      )}
+      ))}
     </div>
   )
 }

@@ -94,7 +94,7 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
   const config = getStatusConfig(booking)
   const recording = isRecording(booking)
   const isManager = user?.role === 'manager'
-  const isContentTeam = user?.role === 'content_team'
+  const isContentTeam = user?.role === 'content_team' || user?.role === 'producer'
   const canEdit = isManager || isContentTeam // Tất cả các role đều có thể sửa
   const canDelete = isManager || (isContentTeam && booking.status === 'pending')
   const canApprove = isManager && booking.status === 'pending'

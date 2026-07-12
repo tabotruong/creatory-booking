@@ -21,7 +21,7 @@ export const DEMO_USERS: User[] = [
   { id: '8', email: 'tabo@creatory.vn', name: 'Tabo', role: 'cameraman', avatar: '🎥' },
   { id: '9', email: 'content1@creatory.vn', name: 'Nhung Trợ Lý', role: 'content_team', avatar: '👩‍💻' },
   { id: '10', email: 'content2@creatory.vn', name: 'Ngô Diệc Phy', role: 'content_team', avatar: '👨‍💻' },
-  { id: '11', email: 'producer@creatory.vn', name: 'Đội Thanh Thanh', role: 'producer', avatar: '🎬' },
+  { id: '11', email: 'producer@creatory.vn', name: 'Doi Thanh Thanh', role: 'producer', avatar: '🎬' },
 ]
 
 export const EQUIPMENT_LIST: string[] = [

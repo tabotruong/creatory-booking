@@ -24,6 +24,7 @@ export default function LoginPage() {
     { id: 'manager', label: 'Quản lý', icon: '👨‍💼', description: 'Duyệt booking, phân công cameraman' },
     { id: 'cameraman', label: 'Cameraman', icon: '🎥', description: 'Xem lịch, thực hiện checklist' },
     { id: 'content_team', label: 'Content Team', icon: '👩‍💻', description: 'Tạo và quản lý booking' },
+    { id: 'producer', label: 'Producer', icon: '🎬', description: 'Tạo và quản lý booking' },
   ]
 
   return (
@@ -42,7 +43,7 @@ export default function LoginPage() {
           <p className="text-sm text-brand-text-secondary mb-3 text-center">
             Chọn vai trò để đăng nhập (Demo)
           </p>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {roles.map((role) => (
               <button
                 key={role.id}
