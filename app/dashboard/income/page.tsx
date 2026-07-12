@@ -7,6 +7,7 @@ import { vi } from 'date-fns/locale'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import { formatDate } from '@/lib/utils'
+import { CAMERAMEN_LIST } from '@/lib/constants'
 
 interface WorkSession {
   bookingId: string
@@ -19,16 +20,19 @@ interface WorkSession {
 }
 
 // Round time according to rules
+// Check-in: 6:00-6:15 → 6:00 | 6:16-6:30 → 6:30 | 6:31-6:40 → 6:30 | 6:41-6:59 → 7:00
 function roundCheckIn(time: string): string {
   const [h, m] = time.split(':').map(Number)
-  if (m >= 16 && m <= 30) return `${h}:30`
+  if (m >= 16 && m <= 40) return `${h}:30`
+  if (m >= 41 && m <= 59) return `${h + 1}:00`
   return `${h}:00`
 }
 
+// Check-out: 6:00-6:14 → 6:00 | 6:15-6:39 → 6:30 | 6:40-6:59 → 7:00
 function roundCheckOut(time: string): string {
   const [h, m] = time.split(':').map(Number)
-  if (m >= 40 && m <= 59) return `${h + 1}:00`
   if (m >= 15 && m <= 39) return `${h}:30`
+  if (m >= 40 && m <= 59) return `${h + 1}:00`
   return `${h}:00`
 }
 
@@ -69,11 +73,13 @@ export default function IncomePage() {
 
   // Get cameraman's work sessions within billing period
   const workSessions = useMemo(() => {
-    if (user?.role !== 'cameraman') return []
+    if (!user) return []
+
+    const cameramanName = user.name
 
     return bookings
       .filter(b => {
-        if (!b.assignedCameramen.includes(user.name)) return false
+        if (!b.assignedCameramen.includes(cameramanName)) return false
         if (b.status !== 'approved') return false
 
         const bookingDate = new Date(b.date)
@@ -83,7 +89,6 @@ export default function IncomePage() {
         })
       })
       .map(b => {
-        // Simulate check-in/out based on booking time for demo
         const checkIn = b.startTime
         const checkOut = b.endTime
         const hours = calculateHours(checkIn, checkOut)
@@ -101,6 +106,30 @@ export default function IncomePage() {
       })
       .sort((a, b) => b.date.localeCompare(a.date))
   }, [user, bookings, billingPeriod])
+
+  // Get all cameraman's income summary
+  const allCameramenIncome = useMemo(() => {
+    return CAMERAMEN_LIST.map(name => {
+      const sessions = bookings
+        .filter(b => {
+          if (!b.assignedCameramen.includes(name)) return false
+          if (b.status !== 'approved') return false
+
+          const bookingDate = new Date(b.date)
+          return isWithinInterval(bookingDate, {
+            start: billingPeriod.startDate,
+            end: billingPeriod.endDate
+          })
+        })
+        .map(b => {
+          const hours = calculateHours(b.startTime, b.endTime)
+          return calculatePay(hours)
+        })
+
+      const total = sessions.reduce((sum, p) => sum + p, 0)
+      return { name, total, count: sessions.length }
+    })
+  }, [bookings, billingPeriod])
 
   const totalIncome = workSessions.reduce((sum, s) => sum + s.pay, 0)
   const totalHours = workSessions.reduce((sum, s) => sum + s.hours, 0)
@@ -151,9 +180,32 @@ export default function IncomePage() {
           <p>• Dưới 4 giờ: <span className="text-white">500,000đ</span></p>
           <p>• Từ giờ thứ 5 trở đi: <span className="text-white">+100,000đ/giờ</span></p>
           <p className="text-xs mt-3 border-t border-brand-border pt-2">
-            Check-in: 6:00-6:15 → 6:00 | 6:16-6:30 → 6:30<br/>
+            Check-in: 6:00-6:15 → 6:00 | 6:16-6:40 → 6:30 | 6:41-6:59 → 7:00<br/>
             Check-out: 6:00-6:14 → 6:00 | 6:15-6:39 → 6:30 | 6:40-6:59 → 7:00
           </p>
+        </div>
+      </Card>
+
+      {/* Team Income Overview */}
+      <Card>
+        <h3 className="font-medium text-white mb-3">Bảng lương team Cameraman (kỳ này)</h3>
+        <div className="space-y-2">
+          {allCameramenIncome.map(c => (
+            <div
+              key={c.name}
+              className={`flex items-center justify-between p-2 rounded ${
+                c.name === user.name ? 'bg-brand-pink/20 border border-brand-pink/30' : 'bg-brand-elevated'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-white font-medium">{c.name}</span>
+                <span className="text-xs text-brand-text-secondary">({c.count} buổi)</span>
+              </div>
+              <span className={`text-sm font-bold ${c.name === user.name ? 'text-brand-pink' : 'text-white'}`}>
+                {c.total.toLocaleString('vi-VN')}đ
+              </span>
+            </div>
+          ))}
         </div>
       </Card>
 
