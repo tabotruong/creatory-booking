@@ -1,15 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Video, Clock, CheckCircle, AlertCircle, Plus, Calendar } from 'lucide-react'
+import { Video, Clock, CheckCircle, AlertCircle, Plus, Calendar, History, ListChecks } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { BookingList } from '@/components/booking'
 import { BookingDetail, BookingForm, CameramanSelector } from '@/components/booking'
 import Modal from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
 import { Booking } from '@/lib/types'
-import { isRecording, cn } from '@/lib/utils'
+import { isRecording, cn, getCurrentDateStr } from '@/lib/utils'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -23,9 +23,11 @@ export default function DashboardPage() {
   const [assignedCameramen, setAssignedCameramen] = useState<string[]>([])
 
   const isManager = user?.role === 'manager'
+  const isCameraman = user?.role === 'cameraman'
   const isContentTeam = user?.role === 'content_team'
+  const today = getCurrentDateStr()
 
-  // Stats
+  // Stats - only for manager/content_team
   const totalBookings = bookings.length
   const pendingBookings = bookings.filter((b) => b.status === 'pending').length
   const approvedBookings = bookings.filter((b) => b.status === 'approved').length
@@ -36,6 +38,19 @@ export default function DashboardPage() {
     ? bookings.filter((b) => b.status === 'pending')
     : []
 
+  // Cameraman view: my upcoming & my history
+  const myBookings = useMemo(() => {
+    if (!isCameraman || !user) return { upcoming: [], history: [] }
+    const mine = bookings.filter((b) => b.assignedCameramen.includes(user.name))
+    const upcoming = mine.filter((b) => b.date >= today).sort((a, b) =>
+      (a.date + a.startTime).localeCompare(b.date + b.startTime)
+    )
+    const history = mine.filter((b) => b.date < today).sort((a, b) =>
+      (b.date + b.startTime).localeCompare(a.date + a.startTime)
+    )
+    return { upcoming, history }
+  }, [bookings, isCameraman, user, today])
+
   const handleApproveClick = (booking: Booking) => {
     setSelectedBooking(booking)
     setAssignedCameramen(booking.assignedCameramen || [])
@@ -44,10 +59,6 @@ export default function DashboardPage() {
 
   const handleApprove = () => {
     if (!selectedBooking) return
-
-    if (assignedCameramen.length < selectedBooking.cameraCount) {
-      return
-    }
 
     const store = useStore.getState()
     store.updateBooking(selectedBooking.id, {
@@ -67,6 +78,58 @@ export default function DashboardPage() {
     { label: 'Đang quay', value: recordingNow, icon: AlertCircle, color: 'text-red-500' },
   ]
 
+  // ============ CAMERAMAN VIEW ============
+  if (isCameraman) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-lg font-semibold font-display text-white">
+          Xin chào, {user?.name}
+        </h2>
+
+        {/* Upcoming bookings */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <ListChecks className="w-5 h-5 text-brand-pink" />
+            <h3 className="font-semibold text-white">
+              Lịch được phân công ({myBookings.upcoming.length})
+            </h3>
+          </div>
+          {myBookings.upcoming.length === 0 ? (
+            <div className="text-center py-8 bg-brand-surface border border-brand-border rounded-xl">
+              <p className="text-brand-text-secondary">Bạn chưa có lịch nào được phân công</p>
+            </div>
+          ) : (
+            <BookingList bookings={myBookings.upcoming} showCreateButton={false} />
+          )}
+        </div>
+
+        {/* History */}
+        {myBookings.history.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <History className="w-5 h-5 text-brand-text-secondary" />
+              <h3 className="font-semibold text-white">
+                Lịch sử các buổi đã quay ({myBookings.history.length})
+              </h3>
+            </div>
+            <BookingList bookings={myBookings.history} showCreateButton={false} />
+          </div>
+        )}
+
+        <BookingDetail
+          booking={selectedBooking}
+          isOpen={showDetail}
+          onClose={() => {
+            setShowDetail(false)
+            setSelectedBooking(null)
+          }}
+          onEdit={() => {}}
+        />
+      </div>
+    )
+  }
+
+  // ============ MANAGER / CONTENT TEAM VIEW ============
   return (
     <div className="space-y-6">
       {/* Stats */}
@@ -155,45 +218,103 @@ export default function DashboardPage() {
         }}
       />
 
-      {/* Approve Modal */}
+      {/* Approve Modal - full booking details */}
       <Modal
         isOpen={showApproveModal}
         onClose={() => setShowApproveModal(false)}
-        title="Phân công Cameraman"
-        size="md"
+        title="Duyệt Booking"
+        size="lg"
       >
         {selectedBooking && (
           <div className="space-y-4">
-            <div className="p-4 bg-brand-elevated rounded-lg">
-              <h3 className="font-medium text-white">{selectedBooking.contentName}</h3>
-              <p className="text-sm text-brand-text-secondary">
-                {selectedBooking.mcName === 'Brand' ? selectedBooking.brandName : selectedBooking.mcName}
-              </p>
-              <p className="text-sm text-brand-text-secondary">
-                {selectedBooking.date} • {selectedBooking.startTime} - {selectedBooking.endTime}
-              </p>
+            {/* Full booking details */}
+            <div className="p-4 bg-brand-elevated rounded-lg space-y-3">
+              <h3 className="font-semibold text-white text-lg">{selectedBooking.contentName}</h3>
+
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                <div className="text-brand-text-secondary">MC:</div>
+                <div className="text-white">{selectedBooking.mcName === 'Brand' ? selectedBooking.brandName : selectedBooking.mcName}</div>
+
+                <div className="text-brand-text-secondary">Loại content:</div>
+                <div className="text-white">{selectedBooking.type}</div>
+
+                <div className="text-brand-text-secondary">SOW:</div>
+                <div className="text-white">{selectedBooking.sow}</div>
+
+                <div className="text-brand-text-secondary">Nền tảng:</div>
+                <div className="text-white">{selectedBooking.platforms.join(', ')}</div>
+
+                <div className="text-brand-text-secondary">Ngày:</div>
+                <div className="text-white">{selectedBooking.date}</div>
+
+                <div className="text-brand-text-secondary">Giờ:</div>
+                <div className="text-white">{selectedBooking.startTime} - {selectedBooking.endTime}</div>
+
+                <div className="text-brand-text-secondary">Địa điểm:</div>
+                <div className="text-white">{selectedBooking.location}</div>
+
+                <div className="text-brand-text-secondary">Camera:</div>
+                <div className="text-white">{selectedBooking.cameraCount}</div>
+
+                <div className="text-brand-text-secondary">Micro:</div>
+                <div className="text-white">{selectedBooking.micCount}</div>
+
+                {selectedBooking.hasTikTokCamera && (
+                  <>
+                    <div className="text-brand-text-secondary">Thiết bị:</div>
+                    <div className="text-white">Camera 9:16 TikTok</div>
+                  </>
+                )}
+                {selectedBooking.hasActionCam && (
+                  <>
+                    <div className="text-brand-text-secondary">Thiết bị:</div>
+                    <div className="text-white">Action Cam</div>
+                  </>
+                )}
+                {selectedBooking.hasGimbal && (
+                  <>
+                    <div className="text-brand-text-secondary">Thiết bị:</div>
+                    <div className="text-white">Gimbal</div>
+                  </>
+                )}
+                {selectedBooking.hasHandheldLight && (
+                  <>
+                    <div className="text-brand-text-secondary">Thiết bị:</div>
+                    <div className="text-white">Đèn cầm tay</div>
+                  </>
+                )}
+
+                {selectedBooking.notes && (
+                  <>
+                    <div className="text-brand-text-secondary">Ghi chú:</div>
+                    <div className="text-white">{selectedBooking.notes}</div>
+                  </>
+                )}
+
+                <div className="text-brand-text-secondary">Người tạo:</div>
+                <div className="text-white">{selectedBooking.createdByName}</div>
+              </div>
             </div>
 
-            <CameramanSelector
-              selectedCameramen={assignedCameramen}
-              onChange={setAssignedCameramen}
-              requiredCount={selectedBooking.cameraCount}
-              bookingDate={selectedBooking.date}
-              bookingStartTime={selectedBooking.startTime}
-              bookingEndTime={selectedBooking.endTime}
-              excludeBookingId={selectedBooking.id}
-            />
+            <div className="border-t border-brand-border pt-4">
+              <CameramanSelector
+                selectedCameramen={assignedCameramen}
+                onChange={setAssignedCameramen}
+                requiredCount={0}
+                bookingDate={selectedBooking.date}
+                bookingStartTime={selectedBooking.startTime}
+                bookingEndTime={selectedBooking.endTime}
+                excludeBookingId={selectedBooking.id}
+              />
+            </div>
 
             <div className="flex gap-3 justify-end pt-4 border-t border-brand-border">
               <Button variant="ghost" onClick={() => setShowApproveModal(false)}>
                 Hủy
               </Button>
-              <Button
-                variant="success"
-                onClick={handleApprove}
-                disabled={assignedCameramen.length < selectedBooking.cameraCount}
-              >
-                Duyệt & Phân công
+              <Button variant="success" onClick={handleApprove}>
+                <CheckCircle className="w-4 h-4 mr-1" />
+                Duyệt
               </Button>
             </div>
           </div>

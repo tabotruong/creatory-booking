@@ -42,6 +42,7 @@ export interface Booking {
   isModified: boolean
   createdAt: string
   updatedAt: string
+  changedFields?: string[] // Track which fields changed after edit
 }
 
 export interface Notification {

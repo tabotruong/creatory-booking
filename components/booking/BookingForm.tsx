@@ -107,6 +107,24 @@ export default function BookingForm({ isOpen, onClose, editBooking }: BookingFor
   const handleSubmit = () => {
     if (!user) return
 
+    // Track which fields changed (only when editing)
+    const changedFields: string[] = []
+    if (editBooking) {
+      const fieldsToCompare: (keyof typeof formData)[] = [
+        'mcName', 'brandName', 'contentName', 'type', 'sow', 'platforms',
+        'date', 'startTime', 'endTime', 'cameraCount', 'micCount',
+        'hasTikTokCamera', 'hasActionCam', 'hasGimbal', 'hasHandheldLight',
+        'location', 'notes',
+      ]
+      fieldsToCompare.forEach((field) => {
+        const oldVal = editBooking[field]
+        const newVal = formData[field]
+        const oldStr = Array.isArray(oldVal) ? [...oldVal].sort().join(',') : String(oldVal ?? '')
+        const newStr = Array.isArray(newVal) ? [...newVal].sort().join(',') : String(newVal ?? '')
+        if (oldStr !== newStr) changedFields.push(field)
+      })
+    }
+
     const bookingData = {
       ...formData,
       type: formData.type as ContentType,
@@ -115,7 +133,8 @@ export default function BookingForm({ isOpen, onClose, editBooking }: BookingFor
       assignedCameramen: editBooking?.assignedCameramen || [],
       createdBy: user.id,
       createdByName: user.name,
-      isModified: !!editBooking, // Mark as modified if editing existing booking
+      isModified: !!editBooking,
+      changedFields: editBooking ? changedFields : [],
     }
 
     if (editBooking) {
@@ -214,16 +233,6 @@ export default function BookingForm({ isOpen, onClose, editBooking }: BookingFor
             required
           />
 
-          {formData.mcName === 'Brand' && (
-            <Input
-              label="Tên Brand"
-              value={formData.brandName}
-              onChange={(e) => setFormData({ ...formData, brandName: e.target.value })}
-              placeholder="Tên brand"
-              required
-            />
-          )}
-
           <Input
             label="Tên Content"
             value={formData.contentName}
@@ -240,15 +249,6 @@ export default function BookingForm({ isOpen, onClose, editBooking }: BookingFor
               options={CONTENT_TYPES.map((t) => ({ value: t, label: t }))}
               required
             />
-            {formData.type === 'Brand' && (
-              <Input
-                label="Tên Brand"
-                value={formData.brandName}
-                onChange={(e) => setFormData({ ...formData, brandName: e.target.value })}
-                placeholder="Tên brand"
-                required
-              />
-            )}
             <Select
               label="SOW"
               value={formData.sow}
@@ -307,7 +307,7 @@ export default function BookingForm({ isOpen, onClose, editBooking }: BookingFor
 
           <div className="grid grid-cols-2 gap-4">
             <Counter
-              label="Số Camera (16:9)"
+              label="Số Camera"
               value={formData.cameraCount}
               onChange={(v) => setFormData({ ...formData, cameraCount: v })}
               min={1}

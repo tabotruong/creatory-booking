@@ -42,15 +42,24 @@ interface InfoRowProps {
   label: string
   value: React.ReactNode
   icon?: React.ReactNode
+  highlight?: boolean
 }
 
-function InfoRow({ label, value, icon }: InfoRowProps) {
+function InfoRow({ label, value, icon, highlight }: InfoRowProps) {
   return (
-    <div className="flex items-start gap-3 py-2 border-b border-brand-border/50 last:border-b-0">
+    <div
+      className={cn(
+        'flex items-start gap-3 py-2 border-b border-brand-border/50 last:border-b-0 rounded px-2 -mx-2 transition-colors',
+        highlight && 'bg-orange-500/20 border-l-2 border-l-orange-500'
+      )}
+    >
       {icon && <div className="text-brand-pink mt-0.5 flex-shrink-0">{icon}</div>}
       <div className="flex-1 grid grid-cols-2 gap-2">
-        <div className="text-sm text-brand-text-secondary">{label}</div>
-        <div className="text-sm text-white">{value}</div>
+        <div className="text-sm text-brand-text-secondary">
+          {label}
+          {highlight && <span className="ml-1 text-xs text-orange-400">(đã thay đổi)</span>}
+        </div>
+        <div className={cn('text-sm', highlight ? 'text-orange-300 font-medium' : 'text-white')}>{value}</div>
       </div>
     </div>
   )
@@ -91,6 +100,11 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
   const canApprove = isManager && booking.status === 'pending'
   const canReject = isManager && booking.status === 'pending'
   const canAssignCameraman = isManager && booking.status === 'approved'
+
+  // Helper to check if field was changed
+  const isFieldChanged = (field: string): boolean => {
+    return booking.isModified && (booking.changedFields?.includes(field) ?? false)
+  }
 
   const handleApprove = () => {
     approveBooking(booking.id)
@@ -155,7 +169,7 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
 
   // Equipment list for display
   const equipment = []
-  if (booking.cameraCount) equipment.push({ label: `Camera 16:9: ${booking.cameraCount} cái`, enabled: true })
+  if (booking.cameraCount) equipment.push({ label: `Camera: ${booking.cameraCount} cái`, enabled: true })
   if (booking.micCount) equipment.push({ label: `Microphone: ${booking.micCount} cái`, enabled: true })
   if (booking.hasTikTokCamera) equipment.push({ label: 'Camera 9:16 TikTok', enabled: true })
   if (booking.hasActionCam) equipment.push({ label: 'Action Cam', enabled: true })
@@ -211,18 +225,21 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
               label="Tên MC"
               value={booking.mcName}
               icon={<Users className="w-4 h-4" />}
+              highlight={isFieldChanged('mcName')}
             />
             {booking.mcName === 'Brand' && booking.brandName && (
               <InfoRow
                 label="Brand Name"
                 value={booking.brandName}
                 icon={<Building2 className="w-4 h-4" />}
+                highlight={isFieldChanged('brandName')}
               />
             )}
             <InfoRow
               label="Tên Content"
               value={<span className="font-medium">{booking.contentName}</span>}
               icon={<Video className="w-4 h-4" />}
+              highlight={isFieldChanged('contentName')}
             />
             <InfoRow
               label="Loại content"
@@ -232,6 +249,7 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
                 </span>
               }
               icon={<Aperture className="w-4 h-4" />}
+              highlight={isFieldChanged('type')}
             />
             <InfoRow
               label="SOW"
@@ -241,6 +259,7 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
                 </span>
               }
               icon={<Camera className="w-4 h-4" />}
+              highlight={isFieldChanged('sow')}
             />
             <InfoRow
               label="Nền tảng"
@@ -251,6 +270,7 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
                   ))}
                 </div>
               }
+              highlight={isFieldChanged('platforms')}
             />
           </div>
 
@@ -261,26 +281,35 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
               label="Ngày quay"
               value={formatDate(booking.date)}
               icon={<Calendar className="w-4 h-4" />}
+              highlight={isFieldChanged('date')}
             />
             <InfoRow
               label="Giờ bắt đầu"
               value={booking.startTime}
               icon={<Clock className="w-4 h-4" />}
+              highlight={isFieldChanged('startTime')}
             />
             <InfoRow
               label="Giờ kết thúc"
               value={booking.endTime}
               icon={<Clock className="w-4 h-4" />}
+              highlight={isFieldChanged('endTime')}
             />
             <InfoRow
               label="Địa điểm"
               value={booking.location}
               icon={<MapPin className="w-4 h-4" />}
+              highlight={isFieldChanged('location')}
             />
             {booking.notes && (
-              <div className="mt-3 pt-3 border-t border-brand-border">
+              <div
+                className={cn(
+                  'mt-3 pt-3 border-t border-brand-border rounded',
+                  isFieldChanged('notes') && 'bg-orange-500/20 p-2 border-l-2 border-l-orange-500'
+                )}
+              >
                 <p className="text-sm text-brand-text-secondary mb-1">Ghi chú:</p>
-                <p className="text-sm text-white bg-brand-dark p-3 rounded">
+                <p className={cn('text-sm', isFieldChanged('notes') ? 'text-orange-300' : 'text-white')}>
                   {booking.notes}
                 </p>
               </div>
@@ -291,40 +320,50 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
           <div className="p-4 bg-brand-elevated rounded-lg">
             <SectionTitle icon={<CameraIcon className="w-4 h-4" />} title="Thiết bị" />
             <InfoRow
-              label="Số Camera (16:9)"
+              label="Số Camera"
               value={<span className="text-brand-pink font-semibold">{booking.cameraCount} cái</span>}
               icon={<Camera className="w-4 h-4" />}
+              highlight={isFieldChanged('cameraCount')}
             />
             <InfoRow
               label="Số Microphone"
               value={<span className="text-brand-pink font-semibold">{booking.micCount} cái</span>}
               icon={<Mic className="w-4 h-4" />}
+              highlight={isFieldChanged('micCount')}
             />
 
             {/* Thiết bị bổ sung với toggle hiển thị */}
             <div className="mt-4">
               <p className="text-sm text-brand-text-secondary mb-3">Thiết bị bổ sung:</p>
               <div className="grid grid-cols-2 gap-3">
-                <EquipmentItem
-                  icon={<Smartphone className="w-4 h-4" />}
-                  label="Camera 9:16 TikTok"
-                  enabled={booking.hasTikTokCamera}
-                />
-                <EquipmentItem
-                  icon={<CameraIcon className="w-4 h-4" />}
-                  label="Action Cam"
-                  enabled={booking.hasActionCam}
-                />
-                <EquipmentItem
-                  icon={<Move3D className="w-4 h-4" />}
-                  label="Gimbal"
-                  enabled={booking.hasGimbal}
-                />
-                <EquipmentItem
-                  icon={<Lightbulb className="w-4 h-4" />}
-                  label="Đèn cầm tay"
-                  enabled={booking.hasHandheldLight}
-                />
+                <div className={isFieldChanged('hasTikTokCamera') ? 'ring-2 ring-orange-500 rounded-lg' : ''}>
+                  <EquipmentItem
+                    icon={<Smartphone className="w-4 h-4" />}
+                    label="Camera 9:16 TikTok"
+                    enabled={booking.hasTikTokCamera}
+                  />
+                </div>
+                <div className={isFieldChanged('hasActionCam') ? 'ring-2 ring-orange-500 rounded-lg' : ''}>
+                  <EquipmentItem
+                    icon={<CameraIcon className="w-4 h-4" />}
+                    label="Action Cam"
+                    enabled={booking.hasActionCam}
+                  />
+                </div>
+                <div className={isFieldChanged('hasGimbal') ? 'ring-2 ring-orange-500 rounded-lg' : ''}>
+                  <EquipmentItem
+                    icon={<Move3D className="w-4 h-4" />}
+                    label="Gimbal"
+                    enabled={booking.hasGimbal}
+                  />
+                </div>
+                <div className={isFieldChanged('hasHandheldLight') ? 'ring-2 ring-orange-500 rounded-lg' : ''}>
+                  <EquipmentItem
+                    icon={<Lightbulb className="w-4 h-4" />}
+                    label="Đèn cầm tay"
+                    enabled={booking.hasHandheldLight}
+                  />
+                </div>
               </div>
             </div>
           </div>

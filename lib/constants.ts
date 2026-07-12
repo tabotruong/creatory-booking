@@ -53,14 +53,14 @@ export const DEFAULT_EQUIPMENT_CHECKLIST = (): ChecklistItem[] =>
 
 export const DEFAULT_CAMERA_SETTINGS = (): CameraSettings => ({
   cardFormat: false,
-  resolution: '4K',
+  resolution: 'FullHD',
   fps: 30,
   pp: false,
-  recLevel: 50,
-  shutterSpeed: '1/50',
+  recLevel: 0,
+  shutterSpeed: 'Auto',
   aputure: false,
-  iso: 800,
-  wb: '5600K',
+  iso: 0,
+  wb: 'Auto',
 })
 
 export const DEFAULT_MIC_SETTINGS = (): MicSettings => ({

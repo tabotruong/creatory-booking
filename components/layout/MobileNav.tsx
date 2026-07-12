@@ -100,7 +100,7 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
               </Link>
             )
           })}
-          {user?.role === 'cameraman' && (
+          {(user?.role === 'cameraman' || user?.role === 'manager') && (
             <Link
               href="/dashboard/income"
               onClick={onClose}
@@ -112,7 +112,7 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
               )}
             >
               <Wallet className="w-5 h-5" />
-              <span className="font-medium">Thu nhập</span>
+              <span className="font-medium">Bảng lương</span>
             </Link>
           )}
         </nav>
