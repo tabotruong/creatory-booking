@@ -43,6 +43,7 @@ export interface Booking {
   createdAt: string
   updatedAt: string
   changedFields?: string[] // Track which fields changed after edit
+  checklistNotes?: { [cameramanName: string]: string } // Notes per cameraman
 }
 
 export interface Notification {
@@ -89,4 +90,15 @@ export interface EquipmentChecklist {
   items: ChecklistItem[]
   checkedInAt?: string
   checkedOutAt?: string
+  notes?: string // Cameraman notes/issues during filming
+}
+
+export interface ChecklistSession {
+  bookingId: string
+  equipment: ChecklistItem[]
+  camera: CameraSettings
+  mic: MicSettings
+  notes?: string
+  createdAt: string
+  updatedAt: string
 }

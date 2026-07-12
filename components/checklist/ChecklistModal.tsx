@@ -3,10 +3,12 @@
 import { useState } from 'react'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
+import Textarea from '../ui/Textarea'
 import EquipmentChecklist from './EquipmentChecklist'
 import CameraSettingsForm from './CameraSettings'
 import MicSettingsForm from './MicSettings'
 import { ChecklistItem, CameraSettings, MicSettings } from '@/lib/types'
+import { useStore } from '@/lib/store'
 import { DEFAULT_EQUIPMENT_CHECKLIST, DEFAULT_CAMERA_SETTINGS, DEFAULT_MIC_SETTINGS } from '@/lib/constants'
 
 interface ChecklistModalProps {
@@ -16,7 +18,13 @@ interface ChecklistModalProps {
 }
 
 export default function ChecklistModal({ isOpen, onClose, bookingId }: ChecklistModalProps) {
-  const [activeTab, setActiveTab] = useState<'equipment' | 'camera' | 'mic'>('equipment')
+  const user = useStore((state) => state.user)
+  const updateBooking = useStore((state) => state.updateBooking)
+  const bookings = useStore((state) => state.bookings)
+
+  const booking = bookings.find(b => b.id === bookingId)
+
+  const [activeTab, setActiveTab] = useState<'equipment' | 'camera' | 'mic' | 'notes'>('equipment')
   const [equipmentItems, setEquipmentItems] = useState<ChecklistItem[]>(DEFAULT_EQUIPMENT_CHECKLIST())
   const [cameraSettings, setCameraSettings] = useState<CameraSettings>(DEFAULT_CAMERA_SETTINGS())
   const [micSettings, setMicSettings] = useState<MicSettings>(DEFAULT_MIC_SETTINGS())
@@ -24,12 +32,17 @@ export default function ChecklistModal({ isOpen, onClose, bookingId }: Checklist
   const [checkOutTime, setCheckOutTime] = useState<string | null>(null)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [confirmAction, setConfirmAction] = useState<'checkin' | 'checkout' | null>(null)
+  const [notes, setNotes] = useState(booking?.checklistNotes?.[user?.name || ''] || '')
 
   const handleSubmit = () => {
-    console.log('Equipment:', equipmentItems)
-    console.log('Camera:', cameraSettings)
-    console.log('Mic:', micSettings)
-    console.log('Check-in:', checkInTime, 'Check-out:', checkOutTime)
+    if (user && booking) {
+      // Save notes to booking
+      const newChecklistNotes = {
+        ...booking.checklistNotes,
+        [user.name]: notes,
+      }
+      updateBooking(bookingId, { checklistNotes: newChecklistNotes })
+    }
     onClose()
   }
 
@@ -58,6 +71,7 @@ export default function ChecklistModal({ isOpen, onClose, bookingId }: Checklist
     { id: 'equipment' as const, label: 'Thiết bị' },
     { id: 'camera' as const, label: 'Camera Setting' },
     { id: 'mic' as const, label: 'Micro' },
+    { id: 'notes' as const, label: 'Ghi chú' },
   ]
 
   return (
@@ -90,6 +104,20 @@ export default function ChecklistModal({ isOpen, onClose, bookingId }: Checklist
           )}
           {activeTab === 'mic' && (
             <MicSettingsForm settings={micSettings} onChange={setMicSettings} />
+          )}
+          {activeTab === 'notes' && (
+            <div className="space-y-4">
+              <p className="text-sm text-brand-text-secondary">
+                Ghi lại các vấn đề hoặc lưu ý trong quá trình quay để Manager tiện theo dõi.
+              </p>
+              <Textarea
+                label="Ghi chú / Vấn đề"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="VD: Ánh sáng yếu buổi sáng, mic có tiếng réo..."
+                rows={6}
+              />
+            </div>
           )}
         </div>
 

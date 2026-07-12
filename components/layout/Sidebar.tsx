@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Calendar, Video, ClipboardList, LogOut, Wallet } from 'lucide-react'
+import { LayoutDashboard, Calendar, Video, ClipboardList, LogOut, Wallet, AlertCircle } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
 
@@ -20,6 +20,7 @@ export default function Sidebar() {
   const setUser = useStore((state) => state.setUser)
 
   const isCameraman = user?.role === 'cameraman'
+  const isManager = user?.role === 'manager'
 
   const handleLogout = () => {
     setUser(null)
@@ -57,8 +58,8 @@ export default function Sidebar() {
           )
         })}
 
-        {/* Income tab - only for cameraman */}
-        {isCameraman && (
+        {/* Bảng lương - for both cameraman and manager */}
+        {(isCameraman || isManager) && (
           <Link
             href="/dashboard/income"
             className={cn(
@@ -69,7 +70,23 @@ export default function Sidebar() {
             )}
           >
             <Wallet className="w-5 h-5" />
-            <span className="font-medium">Thu nhập</span>
+            <span className="font-medium">Bảng lương</span>
+          </Link>
+        )}
+
+        {/* Ghi chú/Vấn đề - only for manager */}
+        {isManager && (
+          <Link
+            href="/dashboard/issues"
+            className={cn(
+              'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
+              pathname === '/dashboard/issues'
+                ? 'bg-brand-pink/20 text-brand-pink border-l-4 border-brand-pink'
+                : 'text-brand-text-secondary hover:bg-brand-elevated hover:text-white'
+            )}
+          >
+            <AlertCircle className="w-5 h-5" />
+            <span className="font-medium">Ghi chú/Vấn đề</span>
           </Link>
         )}
       </nav>

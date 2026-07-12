@@ -460,13 +460,28 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
           </div>
 
           {/* Meta */}
-          <div className="text-xs text-brand-text-secondary border-t border-brand-border pt-4">
+          <div className="text-xs text-brand-text-secondary border-t border-brand-border pt-4 space-y-1">
             <p>Tạo bởi: <span className="text-white">{booking.createdByName}</span></p>
-            <p>Ngày tạo: <span className="text-white">{formatDate(booking.createdAt.split('T')[0])}</span></p>
+            <p>Tạo lúc: <span className="text-white">{formatDate(booking.createdAt.split('T')[0])} {booking.createdAt.split('T')[1]?.substring(0, 5) || ''}</span></p>
             {booking.updatedAt !== booking.createdAt && (
-              <p>Cập nhật: <span className="text-white">{formatDate(booking.updatedAt.split('T')[0])}</span></p>
+              <p>Cập nhật lúc: <span className="text-white">{formatDate(booking.updatedAt.split('T')[0])} {booking.updatedAt.split('T')[1]?.substring(0, 5) || ''}</span></p>
             )}
           </div>
+
+          {/* Changed fields note - shown when booking is modified */}
+          {booking.isModified && booking.changedFields && booking.changedFields.length > 0 && (
+            <div className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+              <p className="text-sm font-medium text-orange-400 mb-2">
+                <AlertTriangle className="w-4 h-4 inline mr-1" />
+                Các thay đổi đã thực hiện:
+              </p>
+              <ul className="text-sm text-white space-y-1">
+                {booking.changedFields.map((field) => (
+                  <li key={field}>• {field}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex flex-wrap gap-3 pt-4 border-t border-brand-border">
