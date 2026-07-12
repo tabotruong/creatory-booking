@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
@@ -45,6 +45,54 @@ export default function BookingForm({ isOpen, onClose, editBooking }: BookingFor
     hasHandheldLight: editBooking?.hasHandheldLight || false,
     location: editBooking?.location || '',
     notes: editBooking?.notes || '',
+  })
+
+  // Reset form when editBooking changes
+  useEffect(() => {
+    if (editBooking) {
+      setStep(0)
+      setFormData({
+        mcName: editBooking.mcName || '',
+        brandName: editBooking.brandName || '',
+        contentName: editBooking.contentName || '',
+        type: editBooking.type || ('' as ContentType | ''),
+        sow: editBooking.sow || ('' as SOWType | ''),
+        platforms: editBooking.platforms || [],
+        date: editBooking.date || '',
+        startTime: editBooking.startTime || '09:00',
+        endTime: editBooking.endTime || '12:00',
+        cameraCount: editBooking.cameraCount || 1,
+        micCount: editBooking.micCount || 1,
+        hasTikTokCamera: editBooking.hasTikTokCamera || false,
+        hasActionCam: editBooking.hasActionCam || false,
+        hasGimbal: editBooking.hasGimbal || false,
+        hasHandheldLight: editBooking.hasHandheldLight || false,
+        location: editBooking.location || '',
+        notes: editBooking.notes || '',
+      })
+    } else if (isOpen) {
+      // Reset to empty when creating new
+      setStep(0)
+      setFormData({
+        mcName: '',
+        brandName: '',
+        contentName: '',
+        type: '' as ContentType | '',
+        sow: '' as SOWType | '',
+        platforms: [],
+        date: '',
+        startTime: '09:00',
+        endTime: '12:00',
+        cameraCount: 1,
+        micCount: 1,
+        hasTikTokCamera: false,
+        hasActionCam: false,
+        hasGimbal: false,
+        hasHandheldLight: false,
+        location: '',
+        notes: '',
+      })
+    }
   })
 
   const handlePlatformToggle = (platform: Platform) => {
@@ -168,10 +216,10 @@ export default function BookingForm({ isOpen, onClose, editBooking }: BookingFor
 
           {formData.mcName === 'Brand' && (
             <Input
-              label="Brand Name"
+              label="Tên Brand"
               value={formData.brandName}
               onChange={(e) => setFormData({ ...formData, brandName: e.target.value })}
-              placeholder="Nhập tên brand"
+              placeholder="Tên brand"
               required
             />
           )}
@@ -186,7 +234,7 @@ export default function BookingForm({ isOpen, onClose, editBooking }: BookingFor
 
           <div className="grid grid-cols-2 gap-4">
             <Select
-              label="Loại hình"
+              label="Loại content"
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value as ContentType })}
               options={CONTENT_TYPES.map((t) => ({ value: t, label: t }))}

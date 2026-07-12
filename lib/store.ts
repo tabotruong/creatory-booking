@@ -220,7 +220,7 @@ export const useStore = create<BookingStore>()(
       setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
-      name: 'creatory-booking-storage',
+      name: 'creatory-booking-storage-v2',
       storage: createJSONStorage(() => customStorage),
       skipHydration: true,
       onRehydrateStorage: () => {

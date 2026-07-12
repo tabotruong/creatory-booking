@@ -8,13 +8,6 @@ interface PlatformCheckboxProps {
   onChange: (selected: boolean) => void
 }
 
-const platformIcons: Record<string, string> = {
-  Facebook: '📘',
-  TikTok: '🎵',
-  YouTube: '📺',
-  Shopee: '🛒',
-}
-
 export default function PlatformCheckbox({ platform, selected, onChange }: PlatformCheckboxProps) {
   return (
     <button
@@ -27,7 +20,6 @@ export default function PlatformCheckbox({ platform, selected, onChange }: Platf
           : 'bg-brand-elevated border-brand-border text-brand-text-secondary hover:border-brand-pink/50'
       )}
     >
-      <span className="mr-2">{platformIcons[platform] || '📱'}</span>
       {platform}
     </button>
   )

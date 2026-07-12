@@ -102,6 +102,11 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
     onClose()
   }
 
+  const handleConfirm = () => {
+    updateBooking(booking.id, { isModified: false })
+    onClose()
+  }
+
   const handleDelete = () => {
     deleteBooking(booking.id)
     setShowDeleteConfirm(false)
@@ -426,6 +431,12 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
 
           {/* Actions */}
           <div className="flex flex-wrap gap-3 pt-4 border-t border-brand-border">
+            {booking.isModified && (isManager || isContentTeam) && (
+              <Button variant="success" onClick={handleConfirm}>
+                <CheckCircle className="w-4 h-4 mr-1" />
+                Xác nhận thay đổi
+              </Button>
+            )}
             {canApprove && (
               <Button variant="success" onClick={handleApprove}>
                 <CheckCircle className="w-4 h-4 mr-1" />
