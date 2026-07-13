@@ -50,11 +50,11 @@ function calculatePay(hours: number): number {
   return 500000 + (extraHours * 100000)
 }
 
-// Get billing period for a given month
-// 21/6-20/7 = salary for July (month 7)
-function getBillingPeriod(year: number, month: number) {
-  const startDate = new Date(year, month - 1, 21)
-  const endDate = new Date(year, month, 20)
+// Get billing period for a given salary month (1-12)
+// 21/6 - 20/7 = salary for July
+function getBillingPeriod(year: number, salaryMonth: number) {
+  const startDate = new Date(year, salaryMonth - 2, 21) // 21st of previous month
+  const endDate = new Date(year, salaryMonth - 1, 20) // 20th of salary month
   return { startDate, endDate }
 }
 
@@ -169,20 +169,18 @@ export default function IncomePage() {
           {isManager ? 'Bảng lương Cameraman' : 'Thu nhập của tôi'}
         </h2>
 
-        {/* Month selector for manager */}
-        {isManager && (
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => changePeriod('prev')}>
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <span className="text-white font-medium min-w-[80px] text-center">
-              {format(new Date(selectedYear, selectedMonth - 1), 'MM/yyyy', { locale: vi })}
-            </span>
-            <Button variant="ghost" size="sm" onClick={() => changePeriod('next')}>
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-        )}
+        {/* Month selector for both cameraman and manager */}
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={() => changePeriod('prev')}>
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <span className="text-white font-medium min-w-[80px] text-center">
+            {format(new Date(selectedYear, selectedMonth - 1), 'MM/yyyy', { locale: vi })}
+          </span>
+          <Button variant="ghost" size="sm" onClick={() => changePeriod('next')}>
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Billing Period Info */}
@@ -194,7 +192,7 @@ export default function IncomePage() {
             {format(billingPeriod.startDate, 'dd/MM/yyyy')} - {format(billingPeriod.endDate, 'dd/MM/yyyy')}
           </p>
           <span className="text-brand-pink text-sm font-medium">
-            (Lương tháng {format(billingPeriod.endDate, 'MM/yyyy', { locale: vi })})
+            (Lương tháng {format(new Date(selectedYear, selectedMonth - 1), 'MM/yyyy', { locale: vi })})
           </span>
         </div>
       </div>

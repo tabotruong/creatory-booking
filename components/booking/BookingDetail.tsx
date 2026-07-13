@@ -178,7 +178,7 @@ export default function BookingDetail({ booking, isOpen, onClose, onEdit }: Book
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} title="Chi tiết Booking - Review đầy đủ" size="lg">
+      <Modal isOpen={isOpen} onClose={onClose} title="Chi tiết Booking" size="lg">
         <div className="space-y-6">
           {/* Status Banner */}
           <div className={cn('p-4 rounded-lg', config.boxBg)}>
